@@ -81,6 +81,7 @@ def go(config: DictConfig):
             )
 
         if "data_split" in active_steps:
+            # Split into test/training
             _ = mlflow.run(
                 f"{config['main']['components_repository']}/train_val_test_split",
                 'main',
@@ -94,7 +95,7 @@ def go(config: DictConfig):
             )
 
         if "train_random_forest" in active_steps:
-
+            # Train RF algo
             # NOTE: we need to serialize the random forest configuration into JSON
             rf_config = os.path.abspath("rf_config.json")
             with open(rf_config, "w+") as fp:
@@ -120,12 +121,16 @@ def go(config: DictConfig):
 
 
         if "test_regression_model" in active_steps:
-
-            ##################
-            # Implement here #
-            ##################
-
-            pass
+            # Test model performance
+            _ = mlflow.run(
+                f"{config['main']['components_repository']}/test_regression_model",
+                'main',
+                env_manager='conda',
+                parameters={
+                    'mlflow_model': 'random_forest_export:prod',
+                    'test_dataset': 'test_data.csv:latest',
+                },
+            )
 
 
 if __name__ == "__main__":
